@@ -12,7 +12,7 @@ import math
 DEFAULT_BASE_MODEL = 'BAAI/bge-small-zh-v1.5'
 DEFAULT_OUTPUT_DIR = "./output" 
 DEFAULT_EPOCHS = 1
-DEFAULT_BATCH_SIZE = 16 adjust based on GPU memory
+DEFAULT_BATCH_SIZE = 16 #adjust based on GPU memory
 DEFAULT_LEARNING_RATE = 2e-5
 DEFAULT_WARMUP_RATIO = 0.1 # 10% warmup steps
 
