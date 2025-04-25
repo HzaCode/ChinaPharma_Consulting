@@ -14,6 +14,57 @@ The system primarily consists of the following stages:
     - The user's question and the retrieved context are combined into a prompt.
     - The fine-tuned LLM generates an answer based on the provided prompt (question + context).
 
+## Workflow Diagram
+
+```mermaid
+graph TD
+    subgraph "Data Preparation"
+        A["Prepare Source<br>Document (.txt)"] --> C{"Configure<br>config.py"};
+        B["Prepare QA<br>Dataset (.json)"] --> C;
+    end
+
+    subgraph "Build Knowledge Base"
+        D["Load Source<br>Document"] --> E["Chunk Text"];
+        E --> F["Generate Embeddings<br>(bge-small-zh-v1.5)"];
+        F --> G["Store Chunks & Embeddings<br>(using pickle)"];
+        C --> D;
+        C --> F;
+    end
+
+    subgraph "LLM Fine-tuning"
+        H["Load Base LLM<br>(TinyLlama)"] --> K["Fine-tune using<br>PEFT/LoRA"];
+        I["Load QA Training<br>/Eval Dataset"] --> K;
+        C --> H;
+        C --> I;
+        K --> L["Save Fine-tuned<br>Model/Adapter"];
+    end
+
+    subgraph "RAG Querying"
+        M["User Input<br>Question"] --> N["Generate Question Embedding<br>(bge-small-zh-v1.5)"];
+        N --> O{"Knowledge Base<br>Retrieval"};
+        G -- Embeddings/Chunks --> O;
+        O -- Retrieved Relevant Chunks --> P;
+        M -- User Question --> P;
+        P["Combine Prompt<br>(Question + Context)"] --> Q{"Fine-tuned<br>LLM"};
+        L -- Load Fine-tuned Model --> Q;
+        Q --> R["Generate<br>Answer"];
+    end
+
+    subgraph "Evaluation (Optional)"
+        S["Evaluate RAG Pipeline<br>(main_evaluate_rag.py)"]
+        T["Evaluate Fine-tuned LLM<br>(main_evaluate_llm.py)"]
+        C --> S;
+        C --> T;
+        G --> S;
+        L --> S;
+        L --> T;
+        I -- Evaluation Data --> S;
+        I -- Evaluation Data --> T;
+    end
+
+    C --> M;
+```
+
 ## Key Components and Technologies
 
 -   **Base LLM:** TinyLlama (e.g., `TinyLlama/TinyLlama-1.1B-Chat-v1.0`) - Used for answer generation, typically after fine-tuning.
